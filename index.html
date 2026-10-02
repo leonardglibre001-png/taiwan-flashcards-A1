@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Taiwan Mandarin Flashcards</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f7f6;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        h1 {
+            color: #333;
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+            text-align: center;
+        }
+        .counter {
+            color: #666;
+            margin-bottom: 20px;
+        }
+        .card {
+            width: 100%;
+            max-width: 350px;
+            height: 220px;
+            background-color: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            padding: 20px;
+            text-align: center;
+            box-sizing: border-box;
+            transition: transform 0.2s;
+        }
+        .card:active {
+            transform: scale(0.98);
+        }
+        .traditional {
+            font-size: 2.3rem;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+        .pinyin {
+            font-size: 1.1rem;
+            color: #e67e22;
+            margin-bottom: 8px;
+        }
+        .english {
+            font-size: 1rem;
+            color: #7f8c8d;
+        }
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 1rem;
+            border: none;
+            border-radius: 6px;
+            background-color: #3498db;
+            color: white;
+            cursor: pointer;
+        }
+        button:active {
+            background-color: #2980b9;
+        }
+        .audio-btn {
+            background-color: #2ecc71;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Taiwan Mandarin Flashcards</h1>
+    <div class="counter" id="counter">1 / 177</div>
+
+    <div class="card">
+        <div id="cardContent">
+            <div class="traditional" id="wordTraditional">你好</div>
+            <div class="pinyin" id="wordPinyin">nǐ hǎo</div>
+            <div class="english" id="wordEnglish">Hello</div>
+        </div>
+    </div>
+
+    <button class="audio-btn" onclick="speakWord()">🔊 Pakinggan</button>
+
+    <div class="controls">
+        <button onclick="prevCard()">Previous</button>
+        <button onclick="nextCard()">Next</button>
+    </div>
+
+    <script>
+        const flashcards = [
+            {t: "你好", p: "nǐ hǎo", e: "Hello"},
+            {t: "謝謝", p: "xièxiè", e: "Thank you"},
+            {t: "早安", p: "zǎo ān", e: "Good morning"},
+            {t: "再見", p: "zàijiàn", e: "Goodbye"},
+            {t: "對不起", p: "duìbuqǐ", e: "Sorry / Excuse me"},
+            {t: "沒關係", p: "méi guānxi", e: "It doesn't matter / That's okay"},
+            {t: "請", p: "qǐng", e: "Please"},
+            {t: "不客氣", p: "bú kèqì", e: "You're welcome"},
+            {t: "是", p: "shì", e: "Yes / Is / Am / Are"},
+            {t: "不是", p: "bú shì", e: "No / Is not"},
+            {t: "有", p: "yǒu", e: "Have / There is"},
+            {t: "沒有", p: "méiyǒu", e: "Don't have / There is not"},
+            {t: "好", p: "hǎo", e: "Good / Okay"},
+            {t: "不好", p: "bù hǎo", e: "Not good"},
+            {t: "多", p: "duō", e: "Many / Much"},
+            {t: "少", p: "shǎo", e: "Few / Little"},
+            {t: "大", p: "dà", e: "Big"},
+            {t: "小", p: "xiǎo", e: "Small"},
+            {t: "這", p: "zhè", e: "This"},
+            {t: "那", p: "nà", e: "That"},
+            {t: "哪裡", p: "nǎlǐ", e: "Where"},
+            {t: "這裡", p: "zhèlǐ", e: "Here"},
+            {t: "那裡", p: "nàlǐ", e: "There"},
+            {t: "誰", p: "shéi", e: "Who"},
+            {t: "什麼", p: "shénme", e: "What"},
+            {t: "為什麼", p: "wèishénme", e: "Why"},
+            {t: "怎麼", p: "zěnme", e: "How"},
+            {t: "多少", p: "duōshǎo", e: "How much / How many"},
+            {t: "多少錢", p: "duōshǎo qián", e: "How much money / How much does it cost?"},
+            {t: "貴", p: "guì", e: "Expensive"},
+            {t: "便宜", p: "piányí", e: "Cheap"},
+            {t: "捷運", p: "jiéyùn", e: "MRT (Metro in Taiwan)"},
+            {t: "公車", p: "gōngchē", e: "Bus"},
+            {t: "火車", p: "huǒchē", e: "Train"},
+            {t: "高鐵", p: "gāotiě", e: "High Speed Rail (HSR)"},
+            {t: "車站", p: "chēzhàn", e: "Station"},
+            {t: "機場", p: "jīchǎng", e: "Airport"},
+            {t: "飯店", p: "fàndiàn", e: "Hotel / Restaurant"},
+            {t: "便利商店", p: "biànlì shāngdiàn", e: "Convenience store (7-Eleven / FamilyMart)"},
+            {t: "超商", p: "chāoshāng", e: "Supermarket / Convenience store"},
+            {t: "醫院", p: "yīyuàn", e: "Hospital"},
+            {t: "藥局", p: "yàojú", e: "Pharmacy"},
+            {t: "銀行", p: "yínháng", e: "Bank"},
+            {t: "郵局", p: "yóujú", e: "Post office"},
+            {t: "警察局", p: "jǐngchá jú", e: "Police station"},
+            {t: "廁所", p: "cèsuǒ", e: "Restroom / Toilet"},
+            {t: "出口", p: "chūkǒu", e: "Exit"},
+            {t: "入口", p: "rùkǒu", e: "Entrance"},
+            {t: "左邊", p: "zuǒbiān", e: "Left side"},
+            {t: "右邊", p: "yòubiān", e: "Right side"},
+            {t: "前面", p: "qiánmiàn", e: "Front"},
+            {t: "後面", p: "hòumiàn", e: "Back"},
+            {t: "上車", p: "shàng chē", e: "Get on (vehicle)"},
+            {t: "下車", p: "xià chē", e: "Get off (vehicle)"},
+            {t: "悠遊卡", p: "yōuyóukǎ", e: "EasyCard (Taiwan transit card)"},
+            {t: "加值", p: "jiāzhí", e: "Top up / Reload (card)"},
+            {t: "買單", p: "mǎidān", e: "Pay the bill / Check out"},
+            {t: "發票", p: "fāpiào", e: "Receipt (Taiwan receipt lottery)"},
+            {t: "統编", p: "tǒngbiān", e: "Unified Business No. (for tax/company receipt)"},
+            {t: "現金", p: "xiànjīn", e: "Cash"},
+            {t: "刷卡", p: "shuākǎ", e: "Swipe card / Pay by card"},
+            {t: "行動支付", p: "xíngdòng zhīfù", e: "Mobile payment (Apple Pay / Line Pay)"},
+            {t: "吃飯", p: "chī fàn", e: "Eat a meal"},
+            {t: "喝水", p: "hē shuǐ", e: "Drink water"},
+            {t: "水", p: "shuǐ", e: "Water"},
+            {t: "茶", p: "chá", e: "Tea"},
+            {t: "咖啡", p: "kāfēi", e: "Coffee"},
+            {t: "便當", p: "biàndāng", e: "Lunch box / Bento"},
+            {t: "麵", p: "miàn", e: "Noodles"},
+            {t: "飯", p: "fàn", e: "Rice"},
+            {t: "肉", p: "ròu", e: "Meat"},
+            {t: "雞肉", p: "jīròu", e: "Chicken"},
+            {t: "豬肉", p: "zhūròu", e: "Pork"},
+            {t: "牛肉", p: "niúròu", e: "Beef"},
+            {t: "魚", p: "yú", e: "Fish"},
+            {t: "菜", p: "cài", e: "Vegetable / Dish"},
+            {t: "水果", p: "shuǐguǒ", e: "Fruit"},
+            {t: "甜", p: "tián", e: "Sweet"},
+            {t: "鹹", p: "xián", e: "Salty"},
+            {t: "辣", p: "là", e: "Spicy"},
+            {t: "冰", p: "bīng", e: "Ice / Iced"},
+            {t: "熱", p: "rè", e: "Hot"},
+            {t: "微糖", p: "wēi táng", e: "Slightly sweet (bubble tea option)"},
+            {t: "半糖", p: "bàn táng", e: "Half sugar (bubble tea option)"},
+            {t: "少糖", p: "shǎo táng", e: "Less sugar (bubble tea option)"},
+            {t: "无糖", p: "wú táng", e: "Sugar-free / No sugar"},
+            {t: "少冰", p: "shǎo bīng", e: "Less ice"},
+            {t: "去冰", p: "qù bīng", e: "No ice"},
+            {t: "珍珠奶茶", p: "zhēnzhū nǎichá", e: "Bubble tea / Pearl milk tea"},
+            {t: "工作", p: "gōngzuò", e: "Work / Job"},
+            {t: "學生", p: "xuéshēng", e: "Student"},
+            {t: "學校", p: "xuéxiào", e: "School"},
+            {t: "老師", p: "lǎoshī", e: "Teacher"},
+            {t: "同學", p: "tóngxué", e: "Classmate"},
+            {t: "朋友", p: "péngyǒu", e: "Friend"},
+            {t: "家人", p: "jiārén", e: "Family members"},
+            {t: "爸爸", p: "bàba", e: "Father"},
+            {t: "媽媽", p: "māma", e: "Mother"},
+            {t: "妻子", p: "qīzi", e: "Wife"},
+            {t: "丈夫", p: "zhàngfū", e: "Husband"},
+            {t: "兒子", p: "érzi", e: "Son"},
+            {t: "女兒", p: "nǚ'ér", e: "Daughter"},
+            {t: "家", p: "jiā", e: "Home / Family"},
+            {t: "房間", p: "fángjiān", e: "Room"},
+            {t: "鑰匙", p: "yàoshi", e: "Key"},
+            {t: "手機", p: "shǒujī", e: "Mobile phone"},
+            {t: "電腦", p: "diànnǎo", e: "Computer"},
+            {t: "網路", p: "wǎnglù", e: "Internet / Wi-Fi"},
+            {t: "充電器", p: "chōngdiànqì", e: "Charger"},
+            {t: "電池", p: "diànchí", e: "Battery"},
+            {t: "電", p: "diàn", e: "Electricity / Power"},
+            {t: "冷氣", p: "lěngqì", e: "Air conditioning (AC)"},
+            {t: "天氣", p: "tiānqì", e: "Weather"},
+            {t: "下雨", p: "xià yǔ", e: "Raining"},
+            {t: "出太陽", p: "chū tàiyáng", e: "Sunny"},
+            {t: "熱", p: "rè", e: "Hot (weather)"},
+            {t: "冷", p: "lěng", e: "Cold (weather)"},
+            {t: "雨傘", p: "yǔsǎn", e: "Umbrella"},
+            {t: "今天", p: "jīntiān", e: "Today"},
+            {t: "明天", p: "míngtiān", e: "Tomorrow"},
+            {t: "昨天", p: "zuótiān", e: "Yesterday"},
+            {t: "現在", p: "xiànzài", e: "Now"},
+            {t: "時間", p: "shíjiān", e: "Time"},
+            {t: "時候", p: "shíhòu", e: "When / Time"},
+            {t: "等一下", p: "děng yíxià", e: "Wait a moment"},
+            {t: "馬上", p: "mǎshàng", e: "Immediately / Right away"},
+            {t: "快", p: "kuài", e: "Fast / Quick"},
+            {t: "慢", p: "màn", e: "Slow"},
+            {t: "懂", p: "dǒng", e: "Understand"},
+            {t: "聽不懂", p: "tīng bù dǒng", e: "Don't understand (what is heard)"},
+            {t: "知道", p: "zhīdào", e: "Know"},
+            {t: "不知道", p: "bù zhīdào", e: "Don't know"},
+            {t: "可以", p: "kěyǐ", e: "Can / Okay"},
+            {t: "不行", p: "bù xíng", e: "No way / Not allowed"},
+            {t: "要", p: "yào", e: "Want / Need"},
+            {t: "不要", p: "bú yào", e: "Don't want"},
+            {t: "喜歡", p: "xǐhuān", e: "Like"},
+            {t: "討厭", p: "tǎoyàn", e: "Dislike / Hate"},
+            {t: "想", p: "xiǎng", e: "Want to / Think / Miss"},
+            {t: "看", p: "kàn", e: "Look / Watch / Read"},
+            {t: "聽", p: "tīng", e: "Listen / Hear"},
+            {t: "說", p: "shuō", e: "Speak / Say"},
+            {t: "讀", p: "dú", e: "Read"},
+            {t: "寫", p: "xiě", e: "Write"},
+            {t: "學習", p: "xuéxí", e: "Study / Learn"},
+            {t: "做", p: "zuò", e: "Do / Make"},
+            {t: "去", p: "qù", e: "Go"},
+            {t: "來", p: "lái", e: "Come"},
+            {t: "回", p: "huí", e: "Return / Go back"},
+            {t: "出", p: "chū", e: "Go out / Exit"},
+            {t: "進", p: "jìn", e: "Enter"},
+            {t: "坐", p: "zuò", e: "Sit / Take (transport)"},
+            {t: "站", p: "zhàn", e: "Stand / Station"},
+            {t: "走", p: "zǒu", e: "Walk / Leave"},
+            {t: "跑", p: "pǎo", e: "Run"},
+            {t: "買", p: "mǎi", e: "Buy"},
+            {t: "賣", p: "mài", e: "Sell"},
+            {t: "給", p: "gěi", e: "Give / To"},
+            {t: "找", p: "zhǎo", e: "Look for / Give change"},
+            {t: "幫", p: "bāng", e: "Help"},
+            {t: "問", p: "wèn", e: "Ask"},
+            {t: "回答", p: "huídá", e: "Answer"},
+            {t: "開", p: "kāi", e: "Open / Drive / Turn on"},
+            {t: "關", p: "guān", e: "Close / Turn off"},
+            {t: "懂中文", p: "dǒng zhōngwén", e: "Understand Chinese"},
+            {t: "講英文", p: "jiǎng yīngwén", e: "Speak English"},
+            {t: "中文", p: "zhōngwén", e: "Chinese language"},
+            {t: "英文", p: "yīngwén", e: "English language"},
+            {t: "台灣", p: "táiwān", e: "Taiwan"},
+            {t: "台北", p: "táiběi", e: "Taipei"},
+            {t: "高雄", p: "gāoxióng", e: "Kaohsiung"},
+            {t: "警察", p: "jǐngchá", e: "Police officer"},
+            {t: "醫生", p: "yīshēng", e: "Doctor"},
+            {t: "護士", p: "hùshi", e: "Nurse"},
+            {t: "老闆", p: "lǎobǎn", e: "Boss / Shop owner"},
+            {t: "店員", p: "diànyuán", e: "Store clerk"},
+            {t: "司機", p: "sījī", e: "Driver"}
+        ];
+
+        let currentIndex = 0;
+
+        function updateCard() {
+            const card = flashcards[currentIndex];
+            document.getElementById('wordTraditional').innerText = card.t;
+            document.getElementById('wordPinyin').innerText = card.p;
+            document.getElementById('wordEnglish').innerText = card.e;
+            document.getElementById('counter').innerText = `${currentIndex + 1} / ${flashcards.length}`;
+        }
+
+        function nextCard() {
+            currentIndex = (currentIndex + 1) % flashcards.length;
+            updateCard();
+        }
+
+        function prevCard() {
+            currentIndex = (currentIndex - 1 + flashcards.length) % flashcards.length;
+            updateCard();
+        }
+
+        function speakWord() {
+            const card = flashcards[currentIndex];
+            const utterance = new SpeechSynthesisUtterance(card.t);
+            utterance.lang = 'zh-TW'; 
+            window.speechSynthesis.speak(utterance);
+        }
+
+        // Tap card to flip or go next
+        document.querySelector('.card').addEventListener('click', nextCard);
+
+        updateCard();
+    </script>
+</body>
+  </html>
+  
